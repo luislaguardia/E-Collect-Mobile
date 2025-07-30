@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:ecollect/pages/qr.dart';
 
+// maybe add some pages or something just not to show it below in the "activity section" in homepage
+
 class HomePageContent extends StatefulWidget {
   const HomePageContent({super.key});
 

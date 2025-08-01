@@ -14,19 +14,41 @@ class QRContent extends StatefulWidget {
 }
 
 class _QRContentState extends State<QRContent> {
-  bool qrDetected = false;
-  String? barcodeValue;
-  String? responseMessage;
+  bool isScanning = true;
+  String? statusMessage;
   bool isSuccess = false;
+  bool isLoading = false;
+  MobileScannerController? scannerController;
+
+  @override
+  void initState() {
+    super.initState();
+    scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+    );
+  }
+
+  @override
+  void dispose() {
+    scannerController?.dispose();
+    super.dispose();
+  }
 
   Future<void> submitScan(String rawValue) async {
+    setState(() {
+      isLoading = true;
+      statusMessage = 'Processing scan...';
+    });
+
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
+      
       if (token == null) {
         setState(() {
-          responseMessage = 'You must be logged in to scan.';
+          statusMessage = 'Please log in to continue scanning';
           isSuccess = false;
+          isLoading = false;
         });
         return;
       }
@@ -41,100 +63,229 @@ class _QRContentState extends State<QRContent> {
       );
 
       final result = jsonDecode(response.body);
+      final success = response.statusCode == 200 && result['success'] == true;
 
       setState(() {
-        responseMessage = result['message'] ?? 'No response message';
-        isSuccess = response.statusCode == 200 && result['success'] == true;
+        isSuccess = success;
+        statusMessage = success 
+            ? 'QR Scanned Successfully!' 
+            : result['message'] ?? 'Scan failed. Please try again.';
+        isLoading = false;
       });
+
+      if (success) {
+        await Future.delayed(const Duration(seconds: 3));
+        _resetScanner();
+      }
+
     } catch (e) {
       setState(() {
-        responseMessage = 'Error scanning QR: $e';
+        statusMessage = 'Connection error. Please check your internet and try again.';
         isSuccess = false;
+        isLoading = false;
       });
     }
   }
 
+  void _resetScanner() {
+    setState(() {
+      isScanning = true;
+      statusMessage = null;
+      isSuccess = false;
+      isLoading = false;
+    });
+  }
+
+  Widget _buildStatusCard() {
+    if (statusMessage == null && !isLoading) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isSuccess ? Colors.green.shade50 : Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSuccess ? Colors.green : Colors.red,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          if (isLoading)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Icon(
+              isSuccess ? Icons.check_circle : Icons.error,
+              color: isSuccess ? Colors.green : Colors.red,
+              size: 24,
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              statusMessage ?? '',
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'Poppins',
+                color: isSuccess ? Colors.green.shade800 : Colors.red.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        AppBar(
-          backgroundColor: Colors.white,
-          title: const Center(
-            child: Text(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            title: const Text(
               'QR Scanner',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 40,
                 fontFamily: 'Poppins',
+                color: Colors.black,
               ),
             ),
-          ),
-        ),
-        if (responseMessage != null)
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(
-              responseMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: isSuccess ? Colors.green : Colors.red,
-              ),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
-        if (barcodeValue != null)
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              'QR Value: $barcodeValue',
-              style: const TextStyle(fontSize: 16, color: Colors.black),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        Expanded(
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 300,
-                  height: 300,
-                  child: MobileScanner(
-                    controller: MobileScannerController(
-                      detectionSpeed: DetectionSpeed.noDuplicates,
+          
+          _buildStatusCard(),
+          
+          Expanded(
+            child: Center(
+              child: Container(
+                width: 300,
+                height: 300,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (isScanning)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: MobileScanner(
+                          controller: scannerController,
+                          onDetect: (capture) {
+                            final List<Barcode> barcodes = capture.barcodes;
+                            
+                            if (barcodes.isNotEmpty && isScanning && !isLoading) {
+                              final String scannedValue = barcodes.first.rawValue ?? "";
+                              
+                              if (scannedValue.isNotEmpty) {
+                                setState(() {
+                                  isScanning = false;
+                                });
+                                submitScan(scannedValue);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    
+                    SvgPicture.asset(
+                      'assets/cameraFrame.svg',
+                      width: 325,
+                      height: 325,
+                      colorFilter: ColorFilter.mode(
+                        isSuccess ? const Color(0xff92d400) : Colors.amber,
+                        BlendMode.srcIn,
+                      ),
                     ),
-                    onDetect: (capture) {
-                      final List<Barcode> barcodes = capture.barcodes;
-                      final Uint8List? image = capture.image;
-
-                      if (barcodes.isNotEmpty && !qrDetected) {
-                        final String scannedValue = barcodes.first.rawValue ?? "";
-
-                        setState(() {
-                          qrDetected = true;
-                          barcodeValue = scannedValue;
-                          responseMessage = null;
-                          isSuccess = false;
-                        });
-
-                        submitScan(scannedValue);
-                      }
-                    },
-                  ),
+                    
+                    if (isScanning && !isLoading)
+                      const Positioned(
+                        bottom: 20,
+                        child: Text(
+                          'Position QR code within the frame',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'Poppins',
+                            backgroundColor: Colors.black54,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ],
                 ),
-                SvgPicture.asset(
-                  'assets/cameraFrame.svg',
-                  width: 325,
-                  height: 325,
-                  color: qrDetected ? const Color(0xff92d400) : null,
+              ),
+            ),
+          ),
+          
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                if (!isScanning && !isLoading)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _resetScanner,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Scan Another QR Code',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                
+                const SizedBox(height: 10),
+                
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.amber),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Back to Dashboard',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

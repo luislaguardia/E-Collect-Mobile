@@ -41,7 +41,8 @@ class _HomePageContentState extends State<HomePageContent> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          totalPoints = data['user']['transactionStats']['totalPoints']?.toInt() ?? 0;
+          totalPoints =
+              data['user']['transactionStats']['totalPoints']?.toInt() ?? 0;
           recentTransactions = data['user']['recentTransactions'] ?? [];
           isLoading = false;
         });
@@ -60,11 +61,17 @@ class _HomePageContentState extends State<HomePageContent> {
             child: Column(
               children: [
                 const DashboardTitle(),
-                ActivityButtons(onActivityChanged: (activity) => setState(() => selectedActivity = activity)),
+                ActivityButtons(
+                  onActivityChanged: (activity) =>
+                      setState(() => selectedActivity = activity),
+                ),
                 const SizedBox(height: 10),
                 PointsCircle(points: totalPoints),
                 const SizedBox(height: 15),
-                ActivitySection(activity: selectedActivity, transactions: recentTransactions),
+                ActivitySection(
+                  activity: selectedActivity,
+                  transactions: recentTransactions,
+                ),
               ],
             ),
           );
@@ -80,7 +87,11 @@ class DashboardTitle extends StatelessWidget {
       backgroundColor: Colors.white,
       title: const Text(
         'Dashboard',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40, fontFamily: 'Poppins'),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 40,
+          fontFamily: 'Poppins',
+        ),
       ),
       centerTitle: true,
     );
@@ -154,7 +165,9 @@ class PointsCircle extends StatelessWidget {
       width: 270,
       child: Stack(
         children: [
-          Center(child: Lottie.asset('assets/confetti2.json', fit: BoxFit.contain)),
+          Center(
+            child: Lottie.asset('assets/confetti2.json', fit: BoxFit.contain),
+          ),
           Center(
             child: Container(
               width: 200,
@@ -181,7 +194,11 @@ class PointsCircle extends StatelessWidget {
 class ActivitySection extends StatelessWidget {
   final String activity;
   final List<dynamic> transactions;
-  const ActivitySection({super.key, required this.activity, required this.transactions});
+  const ActivitySection({
+    super.key,
+    required this.activity,
+    required this.transactions,
+  });
 
   String formatTimeAgo(DateTime date) {
     final now = DateTime.now();
@@ -193,7 +210,12 @@ class ActivitySection extends StatelessWidget {
     return "just now";
   }
 
-  Widget _buildActivityItem(String iconPath, String title, String points, String time) {
+  Widget _buildActivityItem(
+    String iconPath,
+    String title,
+    String points,
+    String time,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -205,7 +227,12 @@ class ActivitySection extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               color: Colors.amber,
             ),
-            child: SvgPicture.asset(iconPath, width: 20, height: 20, fit: BoxFit.scaleDown),
+            child: SvgPicture.asset(
+              iconPath,
+              width: 20,
+              height: 20,
+              fit: BoxFit.scaleDown,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -215,14 +242,29 @@ class ActivitySection extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 18, fontFamily: 'Poppins')),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 30),
-                      child: Text(points, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        points,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                Text(time, style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                Text(
+                  time,
+                  style: const TextStyle(fontSize: 15, color: Colors.grey),
+                ),
               ],
             ),
           ),
@@ -238,31 +280,56 @@ class ActivitySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.3), spreadRadius: 5, blurRadius: 7, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(25),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(activity, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 28, fontFamily: 'Poppins')),
+            Text(
+              activity,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                fontFamily: 'Poppins',
+              ),
+            ),
             const SizedBox(height: 20),
             for (var tx in transactions.take(3))
               _buildActivityItem(
                 'assets/recycle.svg',
                 tx['scannedObject'] ?? 'Unknown',
                 '+${tx['points'] ?? 0}',
-                formatTimeAgo(DateTime.tryParse(tx['scannedDate'] ?? '') ?? DateTime.now()),
+                formatTimeAgo(
+                  DateTime.tryParse(tx['scannedDate'] ?? '') ?? DateTime.now(),
+                ),
               ),
             const SizedBox(height: 10),
             GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const QRContent())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const QRContent()),
+              ),
               child: Container(
                 width: double.infinity,
                 height: 35,
-                decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: const Center(
-                  child: Text('Find drop-off location', style: TextStyle(fontFamily: 'Poppins', fontSize: 16)),
+                  child: Text(
+                    'Find drop-off location',
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                  ),
                 ),
               ),
             ),

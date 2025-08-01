@@ -35,9 +35,7 @@ class _HistoryContentState extends State<HistoryContent> {
 
       final response = await http.get(
         Uri.parse('https://ecollect-server.onrender.com/api/history'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -100,110 +98,118 @@ class _HistoryContentState extends State<HistoryContent> {
           Expanded(
             child: ListView.builder(
               itemCount: history.length,
-itemBuilder: (context, index) {
-  final item = history[index];
-  final scannedDate = DateTime.tryParse(item['scannedDate'] ?? '') ?? DateTime.now();
-  return GestureDetector(
-    onTap: () {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(item['scannedObject'] ?? 'Item'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Points: ${item['points'] ?? 0}'),
-                Text('Category: ${item['category'] ?? "N/A"}'),
-                Text('Location: ${item['locationTag'] ?? "Unknown"}'),
-                Text('PHP Value: ₱${item['phpValue'] ?? 0}'),
-                Text('Status: ${item['status'] ?? "Unknown"}'),
-                const SizedBox(height: 10),
-                Text('Scanned at: ${scannedDate.toLocal()}'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
-          );
-        },
-      );
-    },
-    child: Center(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: 90,
-        decoration: BoxDecoration(
-          color: Colors.amber,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: const EdgeInsets.only(top: 20),
-        padding: const EdgeInsets.only(left: 20),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.amber,
-              ),
-              margin: const EdgeInsets.only(bottom: 10, left: 3),
-              child: SvgPicture.asset(
-                'assets/recycle.svg',
-                fit: BoxFit.contain,
-              ),
-            ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Text(
-                          item['scannedObject'] ?? 'E-waste',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontFamily: 'Poppins',
+              itemBuilder: (context, index) {
+                final item = history[index];
+                final scannedDate =
+                    DateTime.tryParse(item['scannedDate'] ?? '') ??
+                    DateTime.now();
+                return GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text(item['scannedObject'] ?? 'Item'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Points: ${item['points'] ?? 0}'),
+                              Text('Category: ${item['category'] ?? "N/A"}'),
+                              Text(
+                                'Location: ${item['locationTag'] ?? "Unknown"}',
+                              ),
+                              Text('PHP Value: ₱${item['phpValue'] ?? 0}'),
+                              Text('Status: ${item['status'] ?? "Unknown"}'),
+                              const SizedBox(height: 10),
+                              Text('Scanned at: ${scannedDate.toLocal()}'),
+                            ],
                           ),
-                        ),
+                          actions: [
+                            TextButton(
+                              child: const Text('Close'),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Center(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 30),
-                        child: Text(
-                          "+${item['points'] ?? 0}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      margin: const EdgeInsets.only(top: 20),
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              color: Colors.amber,
+                            ),
+                            margin: const EdgeInsets.only(bottom: 10, left: 3),
+                            child: SvgPicture.asset(
+                              'assets/recycle.svg',
+                              fit: BoxFit.contain,
+                            ),
                           ),
-                        ),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Text(
+                                        item['scannedObject'] ?? 'E-waste',
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 30),
+                                      child: Text(
+                                        "+${item['points'] ?? 0}",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: Text(
+                                    formatTimeAgo(scannedDate),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                      formatTimeAgo(scannedDate),
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-},
+                );
+              },
             ),
           ),
       ],

@@ -43,7 +43,7 @@ class _QRContentState extends State<QRContent> {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      
+
       if (token == null) {
         setState(() {
           statusMessage = 'Please log in to continue scanning';
@@ -56,7 +56,7 @@ class _QRContentState extends State<QRContent> {
       final response = await http.post(
         Uri.parse('https://ecollect-server.onrender.com/api/scan'),
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', //animation
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({'qrData': rawValue}),
@@ -67,8 +67,8 @@ class _QRContentState extends State<QRContent> {
 
       setState(() {
         isSuccess = success;
-        statusMessage = success 
-            ? 'QR Scanned Successfully!' 
+        statusMessage = success
+            ? 'QR Scanned Successfully!'
             : result['message'] ?? 'Scan failed. Please try again.';
         isLoading = false;
       });
@@ -77,10 +77,10 @@ class _QRContentState extends State<QRContent> {
         await Future.delayed(const Duration(seconds: 3));
         _resetScanner();
       }
-
     } catch (e) {
       setState(() {
-        statusMessage = 'Connection error. Please check your internet and try again.';
+        statusMessage =
+            'Connection error. Please check your internet and try again.';
         isSuccess = false;
         isLoading = false;
       });
@@ -166,9 +166,9 @@ class _QRContentState extends State<QRContent> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          
+
           _buildStatusCard(),
-          
+
           Expanded(
             child: Center(
               child: Container(
@@ -184,10 +184,13 @@ class _QRContentState extends State<QRContent> {
                           controller: scannerController,
                           onDetect: (capture) {
                             final List<Barcode> barcodes = capture.barcodes;
-                            
-                            if (barcodes.isNotEmpty && isScanning && !isLoading) {
-                              final String scannedValue = barcodes.first.rawValue ?? "";
-                              
+
+                            if (barcodes.isNotEmpty &&
+                                isScanning &&
+                                !isLoading) {
+                              final String scannedValue =
+                                  barcodes.first.rawValue ?? "";
+
                               if (scannedValue.isNotEmpty) {
                                 setState(() {
                                   isScanning = false;
@@ -198,7 +201,7 @@ class _QRContentState extends State<QRContent> {
                           },
                         ),
                       ),
-                    
+
                     SvgPicture.asset(
                       'assets/cameraFrame.svg',
                       width: 325,
@@ -208,7 +211,7 @@ class _QRContentState extends State<QRContent> {
                         BlendMode.srcIn,
                       ),
                     ),
-                    
+
                     if (isScanning && !isLoading)
                       const Positioned(
                         bottom: 20,
@@ -228,7 +231,7 @@ class _QRContentState extends State<QRContent> {
               ),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -256,9 +259,9 @@ class _QRContentState extends State<QRContent> {
                       ),
                     ),
                   ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,

@@ -65,6 +65,31 @@ class NavigationContainerState extends State<NavigationContainer>
     }
   }
 
+  Widget _buildNavItem(String assetPath, int index) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onItemTapped(index),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                assetPath,
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  selectedIndex == index ? Color(0xff92d400) : Colors.grey.shade600,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,86 +102,29 @@ class NavigationContainerState extends State<NavigationContainer>
         child: getCurrentPage(),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.all(20),
-        color: Color(0xffffffff),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () => onItemTapped(0),
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/home.svg',
-                  colorFilter: ColorFilter.mode(
-                    selectedIndex == 0 ? Color(0xff92d400) : Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                width: 35,
-                height: 35,
-              ),
-            ),
-
-            GestureDetector(
-              onTap: () => onItemTapped(1),
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/notification.svg',
-                  colorFilter: ColorFilter.mode(
-                    selectedIndex == 1 ? Color(0xff92d400) : Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                width: 35,
-                height: 35,
-              ),
-            ),
-
-            GestureDetector(
-              onTap: () => onItemTapped(2),
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/qr.svg',
-                  colorFilter: ColorFilter.mode(
-                    selectedIndex == 2 ? Color(0xff92d400) : Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                width: 35,
-                height: 35,
-              ),
-            ),
-
-            GestureDetector(
-              onTap: () => onItemTapped(3),
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/history.svg',
-                  colorFilter: ColorFilter.mode(
-                    selectedIndex == 3 ? Color(0xff92d400) : Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                width: 35,
-                height: 35,
-              ),
-            ),
-
-            GestureDetector(
-              onTap: () => onItemTapped(4),
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/profile.svg',
-                  colorFilter: ColorFilter.mode(
-                    selectedIndex == 4 ? Color(0xff92d400) : Colors.black,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                width: 35,
-                height: 35,
-              ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, -2),
             ),
           ],
+        ),
+        child: SafeArea(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                _buildNavItem('assets/home.svg', 0),
+                _buildNavItem('assets/notification.svg', 1),
+                _buildNavItem('assets/qr.svg', 2),
+                _buildNavItem('assets/history.svg', 3),
+                _buildNavItem('assets/profile.svg', 4),
+              ],
+            ),
+          ),
         ),
       ),
     );
